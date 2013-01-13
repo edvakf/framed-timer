@@ -71,7 +71,15 @@ function post($args) {
   $stmt->bindValue(1, $line, PDO::PARAM_STR);
   $stmt->execute();
 
-  echo json_encode(array('data'=>array('status'=>'success', 'line'=>$line)));
+  $id = $con->lastInsertId();
+
+  $sql = 'SELECT * FROM chat_line WHERE id = ?';
+  $stmt = $con->prepare($sql);
+  $stmt->bindValue(1, $id, PDO::PARAM_STR);
+  $stmt->execute();
+  $res = $stmt->fetch(PDO::FETCH_ASSOC);
+
+  echo json_encode($res);
 }
 
 function get_pdo() {

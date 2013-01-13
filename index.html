@@ -32,8 +32,8 @@
   <body>
     <div id="main"></div>
     <div id="controller" class="hidden">
-      <form id="command-line">
-        <input id="command" name="command"/>
+      <form id="command-line" method="post" action="api.php">
+        <input id="command" name="line"/>
       </form>
       <ol id="comments"></ol>
     </div>
