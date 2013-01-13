@@ -21,12 +21,16 @@ $(function() {
   });
 
   $("#command-line").on('submit', function() {
+    if ($('#command').val() === '') return false;
+
     $.post($(this).attr("action"), $(this).serialize(), function(response) {
       if (response.error) return;
       var li = $('<li></li>');
       li.text(response.line);
       $('#comments').prepend(li);
     }, 'json');
+
+    $('#command').val('');
     return false;
   });
 });
