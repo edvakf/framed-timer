@@ -125,7 +125,7 @@ var Ticker = {
 
 $(function() {
   $(window).on('dblclick', function(e) {
-    $('#controller').toggleClass('hidden');
+    $('#controller').toggleClass('target');
   });
 
   $("#command-line").on('submit', function() {
