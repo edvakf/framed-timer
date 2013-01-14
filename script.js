@@ -1,25 +1,43 @@
 var Timer = {
+  pre: 0,
   time: 0,
   status: 'stop',
-  set: function(min) {
-    this.status = 'stop';
-    this.time = min * 60 * 1000;
-    this.display();
-  },
-  start: function() {
+  start: function(time) {
+    this.pre = 3000;
+    this.time = time;
     this.status = 'running';
+    this.display();
   },
   proceed: function(delta) {
     if (this.status === 'running') {
-      this.time -= delta;
-      if (this.time < 0) {
-        this.time = 0;
-        this.status = 'stop';
+      if (this.pre > 0) {
+        this.pre -= delta;
+        if (this.pre < 0) {
+          this.pre = 0;
+        }
+      } else {
+        this.time -= delta;
+        if (this.time < 0) {
+          this.time = 0;
+          this.pre = 3000;
+          this.status = 'stop';
+        }
       }
       this.display();
     }
   },
   display: function() {
+    if (this.pre >= 3000) {
+      var color = 'black';
+    } else if (this.pre >= 2000 && this.pre < 3000) {
+      var color = '#DD3333';
+    } else if (this.pre >= 1000 && this.pre < 2000) {
+      var color = '#BBBB00';
+    } else {
+      var color = '#00BB00';
+    }
+    $('#main').css('background-color', color);
+
     var time = this.time;
     var milli = time % 1000;
     time = Math.floor(time / 1000);
@@ -78,8 +96,6 @@ $(function() {
     return false;
   });
 
-  Timer.set(1);
-  Timer.start();
   Ticker.add(function(interval) {
     Timer.proceed(interval);
   });
@@ -87,10 +103,17 @@ $(function() {
 });
 
 function addCommand(line) {
+  processCommand(line);
   $('#commands').prepend(
     $('<li></li>').
     text(line.line).
     attr('id', 'command-' + line.id).
     attr('insert_time', new Date(line.insert_time)/1000)
   );
+}
+
+function processCommand(line) {
+  if (/^\/timer (\d+)$/.test(line.line)) {
+    Timer.start(RegExp.$1 * 60 * 1000);
+  }
 }
