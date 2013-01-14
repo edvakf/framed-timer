@@ -82,6 +82,37 @@ var Fetcher = {
   }
 };
 
+var Commenter = {
+  flow_time: 5000, // 5秒
+  comments: [],
+  tick: function(interval) {
+    var main_width = $('#main').width();
+    var now = new Date();
+    for (var i = this.comments.length; --i >= 0; ) {
+      var comment = this.comments[i];
+      var frac = (now - comment.time) / this.flow_time;
+      comment.elem.css('left', main_width - (main_width + comment.width) * frac);
+      if (frac > 1) {
+        this.comments.splice(i, 1);
+        comment.elem.remove();
+      }
+    }
+  },
+  add: function(line) {
+    var insert_time = new Date(line.insert_time);
+    if (new Date() - insert_time > this.flow_time) return;
+    var elem = $('<p class="comment"></p>');
+    var main = $('#main');
+    elem.text(line.line);
+    elem.css('left', main.width());
+    main.append(elem);
+    var available_strips = Math.floor(main.height() / elem.height());
+    var nth_strip = Math.floor(insert_time / 1000) % available_strips;
+    elem.css('top', main.height() * (nth_strip / available_strips));
+    this.comments.push({elem: elem, width: elem.width(), time: insert_time});
+  }
+};
+
 var Ticker = {
   procs: [],
   start: function() {
@@ -120,6 +151,7 @@ $(function() {
   Ticker.add(function(interval) {
     Timer.tick(interval);
     Fetcher.tick(interval);
+    Commenter.tick(interval);
   });
   Ticker.start();
 });
@@ -138,5 +170,7 @@ function processCommand(line) {
   if (/^\/timer (\d+)$/.test(line.line)) {
     Timer.start(RegExp.$1 * 60 * 1000);
     Timer.tick(new Date() - new Date(line.insert_time));
+  } else if (line.line.indexOf('/') !== 0) {
+    Commenter.add(line);
   }
 }
