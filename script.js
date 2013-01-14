@@ -54,19 +54,17 @@ var Timer = {
 
 var Fetcher = {
   force_fetch: false,
-  last_fetched: 0,
+  last_fetch_time: 0,
+  last_fetch_id: 0,
   tick: function(interval) {
     var now = new Date();
-    if (!this.force_fetch && now - this.last_fetched < 1000) {
+    if (!this.force_fetch && now - this.last_fetch_time < 1000) {
       return;
     }
-    this.last_fetched = now;
+    this.last_fetch_time = now;
     this.force_fetch = false;
 
-    var commands = $('#commands .command');
-    if (commands.get(0)) {
-      var since_id = commands.get(0).id.split('-')[1];
-    }
+    var since_id = this.last_fetch_id;
     $.ajax({
       type: 'GET',
       url: 'api.php',
@@ -148,20 +146,16 @@ $(function() {
 });
 
 function addCommand(line) {
-  processCommand(line);
-  $('#commands').prepend(
-    $('<li class="command"></li>').
-    text(line.line).
-    attr('id', 'command-' + line.id).
-    attr('insert_time', new Date(line.insert_time)/1000)
-  );
-}
-
-function processCommand(line) {
   if (/^\/timer (\d+)$/.test(line.line)) {
     Timer.start(RegExp.$1 * 60 * 1000);
     Timer.tick(new Date() - new Date(line.insert_time));
   } else if (line.line.indexOf('/') !== 0) {
     Commenter.add(line);
   }
+  Fetcher.last_fetch_id = +line.id;
+
+  $('#commands').prepend($('<li class="command"></li>').text(line.line));
+  var commands = $('#commands .command');
+  if (commands[30]) $(commands[30]).remove();
 }
+
