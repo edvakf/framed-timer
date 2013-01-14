@@ -8,7 +8,7 @@ var Timer = {
     this.status = 'running';
     this.display();
   },
-  proceed: function(delta) {
+  tick: function(delta) {
     if (this.status === 'running') {
       if (this.pre > 0) {
         this.pre -= delta;
@@ -57,13 +57,13 @@ var Ticker = {
   start: function() {
     var interval = 53; // 適当に小さな素数
     setInterval(function() {
-      Ticker.proceed(interval);
+      Ticker.tick(interval);
     }, interval);
   },
   add: function(func) {
     this.procs.push(func);
   },
-  proceed: function(interval) {
+  tick: function(interval) {
     $.each(this.procs, function(i, func) {
       func(interval);
     });
@@ -90,7 +90,7 @@ $(function() {
   registerFetcher();
 
   Ticker.add(function(interval) {
-    Timer.proceed(interval);
+    Timer.tick(interval);
   });
   Ticker.start();
 });
@@ -141,6 +141,6 @@ function addCommand(line) {
 function processCommand(line) {
   if (/^\/timer (\d+)$/.test(line.line)) {
     Timer.start(RegExp.$1 * 60 * 1000);
-    Timer.proceed(new Date() - new Date(line.insert_time));
+    Timer.tick(new Date() - new Date(line.insert_time));
   }
 }
