@@ -32,10 +32,10 @@ function get($args) {
   $con = get_pdo();
 
   if (is_null($since_id)) {
-    $sql = 'SELECT * FROM chat_line ORDER BY id LIMIT 30';
+    $sql = 'SELECT * FROM chat_line ORDER BY id DESC LIMIT 30';
     $stmt = $con->prepare($sql);
   } else {
-    $sql = 'SELECT * FROM chat_line id > ? ORDER BY id LIMIT 30';
+    $sql = 'SELECT * FROM chat_line WHERE id > ? ORDER BY id DESC LIMIT 30';
     $stmt = $con->prepare($sql);
     $stmt->bindValue(1, $since_id, PDO::PARAM_INT);
   }
@@ -73,13 +73,7 @@ function post($args) {
 
   $id = $con->lastInsertId();
 
-  $sql = 'SELECT * FROM chat_line WHERE id = ?';
-  $stmt = $con->prepare($sql);
-  $stmt->bindValue(1, $id, PDO::PARAM_STR);
-  $stmt->execute();
-  $res = $stmt->fetch(PDO::FETCH_ASSOC);
-
-  echo json_encode($res);
+  echo json_encode(array('id'=>$id));
 }
 
 function get_pdo() {

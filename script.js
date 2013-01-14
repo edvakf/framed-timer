@@ -67,19 +67,6 @@ var Ticker = {
 };
 
 $(function() {
-  $.ajax({
-    type: 'GET',
-    url: 'api.php',
-    //data: {since_id: lines.length ? lines[lines.length - 1].id : 0},
-    dataType: 'json'
-  })
-  .success(function(response, responseText, xhr) {
-    if (response.error) return;
-    $.each(response, function(i, line) {
-      addCommand(line);
-    });
-  });
-
   $(window).on('dblclick', function(e) {
     $('#controller').toggleClass('hidden');
   });
@@ -89,12 +76,14 @@ $(function() {
 
     $.post($(this).attr("action"), $(this).serialize(), function(response) {
       if (response.error) return;
-      addCommand(response);
+      // 自分が書き込んだ書き込みのID（response.id）を使う？
     }, 'json');
 
     $('#command').val('');
     return false;
   });
+
+  registerFetcher();
 
   Ticker.add(function(interval) {
     Timer.proceed(interval);
@@ -102,10 +91,38 @@ $(function() {
   Ticker.start();
 });
 
+function registerFetcher() {
+  var last_fetched = 0;
+
+  Ticker.add(function(interval) {
+    var now = new Date();
+    if (now - last_fetched < 1000) return;
+    last_fetched = now;
+
+    var commands = $('#commands .command');
+    if (commands.get(0)) {
+      var since_id = commands.get(0).id.split('-')[1];
+    }
+    $.ajax({
+      type: 'GET',
+      url: 'api.php',
+      data: since_id ? {since_id: since_id} : null,
+      dataType: 'json'
+    })
+    .success(function(response, responseText, xhr) {
+      if (response.error) return;
+      $.each(response.reverse(), function(i, line) {
+        addCommand(line);
+      });
+    });
+
+  });
+}
+
 function addCommand(line) {
   processCommand(line);
   $('#commands').prepend(
-    $('<li></li>').
+    $('<li class="command"></li>').
     text(line.line).
     attr('id', 'command-' + line.id).
     attr('insert_time', new Date(line.insert_time)/1000)
