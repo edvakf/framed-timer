@@ -76,7 +76,7 @@ $(function() {
 
     $.post($(this).attr("action"), $(this).serialize(), function(response) {
       if (response.error) return;
-      // 自分が書き込んだ書き込みのID（response.id）を使う？
+      force_fetch = true;
     }, 'json');
 
     $('#command').val('');
@@ -91,13 +91,18 @@ $(function() {
   Ticker.start();
 });
 
+var force_fetch = false;
+
 function registerFetcher() {
   var last_fetched = 0;
 
   Ticker.add(function(interval) {
     var now = new Date();
-    if (now - last_fetched < 1000) return;
+    if (!force_fetch && now - last_fetched < 1000) {
+      return;
+    }
     last_fetched = now;
+    force_fetch = false;
 
     var commands = $('#commands .command');
     if (commands.get(0)) {
