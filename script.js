@@ -1,3 +1,35 @@
+var Timer = {
+  time: 0,
+  status: 'stop',
+  set: function(min) {
+    this.status = 'stop';
+    this.time = min * 60 * 1000;
+    this.display();
+  },
+  start: function() {
+    this.status = 'running';
+  },
+  proceed: function(delta) {
+    if (this.status === 'running') {
+      this.time -= delta;
+      if (this.time < 0) {
+        this.time = 0;
+        this.status = 'stop';
+      }
+      this.display();
+    }
+  },
+  display: function() {
+    var time = this.time;
+    var milli = time % 1000;
+    time = Math.floor(time / 1000);
+    var sec = time % 60;
+    time = Math.floor(time / 60);
+    var min = time % 60;
+    $('#timer').text(('0' + min).slice(-2) + ':' + ('0' + sec).slice(-2) + '.' + ('00' + milli).slice(-3));
+  },
+};
+
 $(function() {
   $.ajax({
     type: 'GET',
@@ -27,6 +59,13 @@ $(function() {
     $('#command').val('');
     return false;
   });
+
+  Timer.set(1);
+  Timer.display();
+  Timer.start();
+  setInterval(function() {
+    Timer.proceed(17);
+  }, 17);
 });
 
 function addCommand(line) {
