@@ -150,7 +150,7 @@ $(function() {
 });
 
 function addCommand(line) {
-  if (/^\/timer (\d+)$/.test(line.line)) {
+  if (/^\/timer(\d[\d.]*)$/.test(line.line)) {
     Timer.start(RegExp.$1 * 60 * 1000);
     Timer.tick(new Date() - new Date(line.insert_time));
   } else if (line.line.indexOf('/') !== 0) {
