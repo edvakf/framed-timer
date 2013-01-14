@@ -52,6 +52,36 @@ var Timer = {
   },
 };
 
+var Fetcher = {
+  force_fetch: false,
+  last_fetched: 0,
+  tick: function(interval) {
+    var now = new Date();
+    if (!this.force_fetch && now - this.last_fetched < 1000) {
+      return;
+    }
+    this.last_fetched = now;
+    this.force_fetch = false;
+
+    var commands = $('#commands .command');
+    if (commands.get(0)) {
+      var since_id = commands.get(0).id.split('-')[1];
+    }
+    $.ajax({
+      type: 'GET',
+      url: 'api.php',
+      data: since_id ? {since_id: since_id} : null,
+      dataType: 'json'
+    })
+    .success(function(response, responseText, xhr) {
+      if (response.error) return;
+      $.each(response.reverse(), function(i, line) {
+        addCommand(line);
+      });
+    });
+  }
+};
+
 var Ticker = {
   procs: [],
   start: function() {
@@ -80,53 +110,19 @@ $(function() {
 
     $.post($(this).attr("action"), $(this).serialize(), function(response) {
       if (response.error) return;
-      force_fetch = true;
+      Fetcher.force_fetch = true;
     }, 'json');
 
     $('#command').val('');
     return false;
   });
 
-  registerFetcher();
-
   Ticker.add(function(interval) {
     Timer.tick(interval);
+    Fetcher.tick(interval);
   });
   Ticker.start();
 });
-
-var force_fetch = false;
-
-function registerFetcher() {
-  var last_fetched = 0;
-
-  Ticker.add(function(interval) {
-    var now = new Date();
-    if (!force_fetch && now - last_fetched < 1000) {
-      return;
-    }
-    last_fetched = now;
-    force_fetch = false;
-
-    var commands = $('#commands .command');
-    if (commands.get(0)) {
-      var since_id = commands.get(0).id.split('-')[1];
-    }
-    $.ajax({
-      type: 'GET',
-      url: 'api.php',
-      data: since_id ? {since_id: since_id} : null,
-      dataType: 'json'
-    })
-    .success(function(response, responseText, xhr) {
-      if (response.error) return;
-      $.each(response.reverse(), function(i, line) {
-        addCommand(line);
-      });
-    });
-
-  });
-}
 
 function addCommand(line) {
   processCommand(line);
