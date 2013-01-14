@@ -114,20 +114,12 @@ var Commenter = {
 };
 
 var Ticker = {
-  procs: [],
-  start: function() {
-    var interval = 53; // 適当に小さな素数
+  interval: 53, // 適当に小さな素数
+  start: function(func) {
+    var interval = this.interval;
     setInterval(function() {
-      Ticker.tick(interval);
-    }, interval);
-  },
-  add: function(func) {
-    this.procs.push(func);
-  },
-  tick: function(interval) {
-    $.each(this.procs, function(i, func) {
       func(interval);
-    });
+    }, interval);
   }
 };
 
@@ -148,12 +140,11 @@ $(function() {
     return false;
   });
 
-  Ticker.add(function(interval) {
+  Ticker.start(function(interval) {
     Timer.tick(interval);
     Fetcher.tick(interval);
     Commenter.tick(interval);
   });
-  Ticker.start();
 });
 
 function addCommand(line) {
