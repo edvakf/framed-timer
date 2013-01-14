@@ -13,9 +13,13 @@ var Timer = {
       if (this.pre > 0) {
         this.pre -= delta;
         if (this.pre < 0) {
+          delta = -this.pre;
           this.pre = 0;
+        } else {
+          delta = 0;
         }
-      } else {
+      }
+      if (this.time > 0) {
         this.time -= delta;
         if (this.time < 0) {
           this.time = 0;
@@ -137,5 +141,6 @@ function addCommand(line) {
 function processCommand(line) {
   if (/^\/timer (\d+)$/.test(line.line)) {
     Timer.start(RegExp.$1 * 60 * 1000);
+    Timer.proceed(new Date() - new Date(line.insert_time));
   }
 }
