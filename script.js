@@ -82,6 +82,7 @@ var Fetcher = {
 
 var Commenter = {
   flow_time: 5000, // 5秒
+  levels: 10,
   comments: [],
   tick: function(interval) {
     var main_width = $('#main').width();
@@ -104,10 +105,13 @@ var Commenter = {
     elem.text(line.line);
     elem.css('left', main.width());
     main.append(elem);
-    var available_strips = Math.floor(main.height() / elem.height());
-    var nth_strip = Math.floor(insert_time / 1000) % available_strips;
-    elem.css('top', main.height() * (nth_strip / available_strips));
-    this.comments.push({elem: elem, width: elem.width(), time: insert_time});
+    var nico = new NicoNicoLikeCommentLevel(this.levels + 1);
+    $.each(this.comments, function(i, comment) {
+      nico.add(comment.level);
+    });
+    var level = nico.choose();
+    elem.css('top', level / this.levels * (main.height() - elem.height()));
+    this.comments.push({elem: elem, width: elem.width(), time: insert_time, level: level});
   }
 };
 
@@ -159,3 +163,23 @@ function addCommand(line) {
   if (commands[30]) $(commands[30]).remove();
 }
 
+function NicoNicoLikeCommentLevel(n) {
+  this.max_level = n;
+  this.other_comment_levels = [];
+  for (var i = 0; i < n; i++) {
+    this.other_comment_levels[i] = 0;
+  }
+}
+
+NicoNicoLikeCommentLevel.prototype.add = function(level) {
+  this.other_comment_levels[level] += 1;
+}
+
+NicoNicoLikeCommentLevel.prototype.choose = function() {
+  var min = Math.min.apply(null, this.other_comment_levels);
+  for (var i = 0; i < this.max_level; i++) {
+    if (this.other_comment_levels[i] === min) {
+      return i;
+    }
+  }
+}
