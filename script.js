@@ -30,6 +30,24 @@ var Timer = {
   },
 };
 
+var Ticker = {
+  procs: [],
+  start: function() {
+    var interval = 53; // 適当に小さな素数
+    setInterval(function() {
+      Ticker.proceed(interval);
+    }, interval);
+  },
+  add: function(func) {
+    this.procs.push(func);
+  },
+  proceed: function(interval) {
+    $.each(this.procs, function(i, func) {
+      func(interval);
+    });
+  }
+};
+
 $(function() {
   $.ajax({
     type: 'GET',
@@ -61,11 +79,11 @@ $(function() {
   });
 
   Timer.set(1);
-  Timer.display();
   Timer.start();
-  setInterval(function() {
-    Timer.proceed(17);
-  }, 17);
+  Ticker.add(function(interval) {
+    Timer.proceed(interval);
+  });
+  Ticker.start();
 });
 
 function addCommand(line) {
