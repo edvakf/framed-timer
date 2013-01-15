@@ -1,15 +1,18 @@
 var Timer = {
   pre: 0,
   time: 0,
+  post: 0,
   status: 'stop',
   start: function(time) {
     this.pre = 3000;
     this.time = time;
+    this.post = 3000;
     this.status = 'running';
     this.display();
   },
   tick: function(delta) {
     if (this.status === 'running') {
+      // pre, time, post の順に減っていく処理。もうちょっと短く書きたい…
       if (this.pre > 0) {
         this.pre -= delta;
         if (this.pre < 0) {
@@ -22,8 +25,16 @@ var Timer = {
       if (this.time > 0) {
         this.time -= delta;
         if (this.time < 0) {
+          delta = -this.time;
           this.time = 0;
-          this.pre = 3000;
+        } else {
+          delta = 0;
+        }
+      }
+      if (this.post > 0) {
+        this.post -= delta;
+        if (this.post < 0) {
+          this.post = 0;
           this.status = 'stop';
         }
       }
@@ -31,16 +42,15 @@ var Timer = {
     }
   },
   display: function() {
-    if (this.pre >= 3000) {
-      var color = 'black';
-    } else if (this.pre >= 2000 && this.pre < 3000) {
-      var color = '#DD3333';
-    } else if (this.pre >= 1000 && this.pre < 2000) {
-      var color = '#BBBB00';
+    if (this.pre > 0) {
+      $('#main').attr('class', 'pre-timer');
+    } else if (this.time > 0) {
+      $('#main').attr('class', 'during-timer');
+    } else if (this.post > 0) {
+      $('#main').attr('class', 'post-timer');
     } else {
-      var color = '#00BB00';
+      $('#main').attr('class', '');
     }
-    $('#main').css('background-color', color);
 
     var time = this.time;
     var milli = time % 1000;
